@@ -15,9 +15,6 @@ import {
   import { RiCalendarScheduleLine as Calendar } from 'react-icons/ri'
   import { Link, useLocation, useNavigate } from 'react-router-dom'
   
-  import { ActivitiesForm } from './activities-form'
-  import { IzzysForm } from './izzys-form'
-  
   export interface UserProps {
     id: string
     name: string
@@ -25,7 +22,6 @@ import {
   
   export function Sidebar() {
     const [user, setUser] = useState<UserProps | null>(null)
-    const { pathname } = useLocation()
     const navigate = useNavigate()
   
     useEffect(() => {
@@ -35,9 +31,6 @@ import {
         setUser(JSON.parse(auth))
       }
     }, [])
-  
-    const isActivities = pathname === '/activities'
-    const isIzzys = pathname.includes('/izzys')
   
     function handleLogout() {
       Cookies.remove('auth')
@@ -103,8 +96,6 @@ import {
             Meus izzys
           </NavItem>
         </nav>
-        {isActivities && <ActivitiesForm />}
-        {isIzzys && <IzzysForm />}
       </aside>
     )
   }
