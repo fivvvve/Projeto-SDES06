@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Anek Bangla', sans-serif;
+}
+
+input {
+  font-family: 'Antic', sans-serif;
+}
+
+button {
+  font-family: 'Barlow', sans-serif;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  @apply text-fill-gray-700 dark:text-fill-gray-100;
+}

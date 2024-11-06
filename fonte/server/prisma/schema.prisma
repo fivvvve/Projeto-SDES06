@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id String @id @default(uuid())
+  email String @unique
+  nome String
+  senha String
+  excluido Boolean @default(false)
+  izzys user_izzy[]
+  atividades_criadas atividade[]
+  atividades atividade_user[]
+}
+
+model cadastro {
+  id String @id @default(uuid())
+  email String
+  nome String
+  senha String
+}
+
+model izzy {
+  id String @id @default(uuid())
+  nome String
+  descricao String?
+  codigo_convite String? @unique
+  senha String?
+  users user_izzy[]
+  atividades atividade[]
+}
+
+model user_izzy {
+  user user @relation(fields: [user_id], references: [id], onUpdate: Cascade)
+  izzy izzy @relation(fields: [izzy_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  user_id String
+  izzy_id String
+  saiu Boolean @default(false)
+  responsavel Boolean @default(false)
+  @@id([user_id, izzy_id])
+}
+
+model atividade {
+  id String @id @default(uuid())
+  criador user @relation(fields: [criador_id], references: [id], onUpdate: Cascade)
+  criador_id String
+  titulo String
+  descricao String?
+  tipo String @default("Única")
+  izzy izzy @relation(fields: [izzy_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  izzy_id String
+  users atividade_user[]
+  dias_semana dia[]
+  data_inicio DateTime
+  data_limite DateTime?
+  data_final DateTime?
+}
+
+model atividade_user {
+  id Int @id @default(autoincrement())
+  user user @relation(fields: [user_id], references: [id], onUpdate: Cascade)
+  atividade atividade @relation(fields: [atividade_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  user_id String
+  atividade_id String
+  data_limite DateTime
+  status String @default("Pendente")
+}
+
+
+model dia {
+  id Int @id @default(autoincrement())
+  dia String
+  atividade atividade @relation(fields: [atividade_id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  atividade_id String
+}
