@@ -65,8 +65,8 @@ server.post("/user/create", async (req: Request, res: Response) => {
             }
         });
 
-        const text = `Acesse o link abaixo para ativar sua conta:\n\nhttps://www.izzy.com/ativacao?token=${user.id}`;
-        const texthtml = `<h1>Acesse o link abaixo para ativar sua conta:</h1><br><a href='https://www.izzy.com/ativacao?token=${user.id}'>https://www.izzy.com/ativacao?token=${user.id}</a>`
+        const text = `Acesse o link abaixo para ativar sua conta:\n\nhttp://localhost:5173/email-verify?token=${user.id}`
+        const texthtml = `<h1>Acesse o link abaixo para ativar sua conta:</h1><br><a href='http://localhost:5173/email-verify?token=${user.id}'>http://localhost:5173/email-verify?token=${user.id}</a>`
 
         sendEmail(email, text, texthtml);
 
