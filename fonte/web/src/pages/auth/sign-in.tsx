@@ -122,7 +122,7 @@ export function SignIn() {
             name="password"
             control={control}
             render={({ field }) => (
-              <Input {...field} type="password" placeholder="Senha" />
+              <Input {...field} type="password" placeholder="Senha" minLength={8} />
             )}
           />
           {isError && <p className="text-red-500">{error.response?.data}</p>}
