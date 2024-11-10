@@ -1,7 +1,8 @@
 import { api } from '../lib/axios'
 
 interface GetUserActivitiesBody {
-  userId: string
+  userId: string | null
+  izzyId?: string | null
 }
 
 export interface Task {
@@ -22,12 +23,16 @@ export interface GetUserAcitivitiesResponse {
   atividades: Task[]
 }
 
-export async function getUserActivities({ userId }: GetUserActivitiesBody) {
+export async function getUserActivities({
+  userId,
+  izzyId,
+}: GetUserActivitiesBody) {
   const response = await api.get<GetUserAcitivitiesResponse>(
     '/atividades/user',
     {
       params: {
         userId,
+        izzyId,
       },
     },
   )
