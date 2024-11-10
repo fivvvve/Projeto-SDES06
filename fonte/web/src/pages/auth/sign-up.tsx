@@ -102,14 +102,14 @@ export function SignUp() {
             name="password"
             control={control}
             render={({ field }) => (
-              <Input {...field} type="password" placeholder="Senha" />
+              <Input {...field} type="password" placeholder="Senha" minLength={8} />
             )}
           />
           <Controller
             name="confirmPassword"
             control={control}
             render={({ field }) => (
-              <Input {...field} type="password" placeholder="Confirmar senha" />
+              <Input {...field} type="password" placeholder="Confirmar senha" minLength={8} />
             )}
           />
           {Object.entries(errors).map(([key, value]) => {

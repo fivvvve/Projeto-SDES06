@@ -2,19 +2,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import clsx from 'clsx'
-import Cookies from 'js-cookie'
-import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { IoCheckmarkDoneCircleOutline } from 'react-icons/io5'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import z from 'zod'
 
 import { signIn } from '../../api/sign-in'
 import { Button } from '../../components/button'
 import { Input } from '../../components/input'
+import { User, userStore } from '../../store/user'
+import { useEffect } from 'react'
 
 const signInSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email("Formato de email inválido"),
   password: z.string().min(8),
 })
 
@@ -26,26 +27,33 @@ export function SignIn() {
 
   const emailVerified = searchParams.get('email-verified') === 'true'
 
-  const { control, handleSubmit } = useForm<SignInSchema>({
+  const { control, handleSubmit, formState: {errors} } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
   })
 
-  const {
-    mutateAsync: signInFn,
-    error: err,
-    isError,
-  } = useMutation({
-    mutationKey: ['sign-in'],
-    mutationFn: signIn,
-    onSuccess: (data) => {
-      Cookies.set('auth', JSON.stringify(data), {
-        expires: 30,
-      })
-      navigate('/activities')
-    },
+  useEffect(() => {
+    if (errors.email) {
+      toast.error(errors.email.message)
+    }
+  }, [errors])
+
+  const { setCookie } = userStore((state) => {
+    return {
+      setCookie: state.setCookie,
+    }
   })
 
-  const error = err as AxiosError<string>
+  const { mutateAsync: signInFn } = useMutation({
+    mutationKey: ['sign-in'],
+    mutationFn: signIn,
+    onSuccess: (data: User) => {
+      setCookie(data)
+      navigate('/activities')
+    },
+    onError: (err: AxiosError<string>) => {
+      toast.error(err.response?.data)
+    },
+  })
 
   async function handleSignIn(data: SignInSchema) {
     const { email, password } = data
@@ -55,14 +63,6 @@ export function SignIn() {
       password,
     })
   }
-
-  useEffect(() => {
-    const auth = Cookies.get('auth')
-
-    if (auth) {
-      navigate('/')
-    }
-  }, [])
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800">
@@ -125,7 +125,6 @@ export function SignIn() {
               <Input {...field} type="password" placeholder="Senha" minLength={8} />
             )}
           />
-          {isError && <p className="text-red-500">{error.response?.data}</p>}
           <Button>Entrar</Button>
           <p className="text-center text-gray-700 dark:text-gray-50">
             Não tem uma conta?{' '}
