@@ -92,6 +92,20 @@ server.get("/ativacao", async (req: Request, res: Response) => {
             }
         });
 
+        const accountInUse = await prisma.user.findFirst({
+            where: {
+                email: user.email,
+            }
+        });
+
+        if(accountInUse) {
+            if(!accountInUse.excluido) {
+                return res.status(400).send("Conta já ativada");
+            } else {
+                return res.status(400).send("Conta reativada com sucesso");
+            }
+        }
+
         await prisma.$transaction([
             prisma.user.create({
                 data: {
@@ -106,7 +120,7 @@ server.get("/ativacao", async (req: Request, res: Response) => {
                     email: user.email
                 }
             })
-        ])
+        ]);
 
         res.status(200).send('Email confirmado');
         return;
@@ -135,7 +149,8 @@ server.post("/user/login", async (req: Request, res: Response) => {
         const user = await prisma.user.findFirstOrThrow({
             where: {
                 email: email,
-                senha: senha
+                senha: senha,
+                excluido: false
             },
             select: {
                 id: true,
