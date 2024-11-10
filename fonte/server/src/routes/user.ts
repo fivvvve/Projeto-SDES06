@@ -162,21 +162,26 @@ server.patch("/user", async (req: Request, res: Response) => {
 
     try {
         await prisma.user.update({
-            where: {
-                id: id,
-                senha: senha
-            },
+            where: novasenha ? ({ 
+                    id: id,
+                    senha: senha
+                }) : ({
+                    id
+                }),
             data: {
-                nome: nome,
-                email: email,
-                senha: novasenha
+                ...(novasenha ? ({
+                    nome,
+                    senha: novasenha,
+                }) : ({
+                    nome,
+                }))
             }
         });
 
         res.status(200).send({ nome });
         return;
 
-    } catch (error: any) {
+    } catch (error) {
 
         if(error instanceof PrismaClientKnownRequestError) {
           if (error.code === 'P2025') {
