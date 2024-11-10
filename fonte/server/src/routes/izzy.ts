@@ -81,4 +81,105 @@ server.patch('/izzy', async (req: Request, res: Response) => {
   }
 })
 
+// Pesquisar IZZYs
+server.get('/izzys', async (req: Request, res: Response) => {
+  // responsavel = "sim" indica que tá buscando izzys que o usuário é responsável
+  // responsavel = "nao" indica que tá buscando izzys que o usuário não precisa ser responsável
+  // responsavel = undefined indica que tá buscando qualquer izzy que o usuário faz parte
+  // userId = id de quem tá fazendo a busca
+  const { nome, responsavel, userId } = req.query
+
+  const isResponsavel = responsavel === 'sim'
+
+  try {
+    // Constrói a consulta para buscar os IZZYs
+    const izzys = await prisma.izzy.findMany({
+      where: {
+        AND: [
+          {
+            nome: {
+              contains: nome ? String(nome) : '', // Filtra pelo nome se fornecido
+            },
+          },
+          {
+            users: {
+              some: {
+                user_id: String(userId), // ID do usuário que está realizando a pesquisa
+                ...(responsavel && {
+                  responsavel: isResponsavel, // Filtra por responsável se necessário
+                }),
+              },
+            },
+          },
+        ],
+      },
+      orderBy: {
+        nome: 'asc', // Ordena os resultados pelo nome em ordem alfabética
+      },
+      select: {
+        nome: true,
+        descricao: true,
+        id: true,
+      },
+    })
+
+    res.status(200).send(izzys)
+  } catch (error) {
+    res.status(400).send('Desculpe, não foi possível realizar a pesquisa. Tente novamente mais tarde')
+  }
+})
+
+// Consultar IZZY
+server.post('/izzyinfo', async (req: Request, res: Response) => {
+  // id = id do izzy
+  const { id, userId } = req.body
+
+  try {
+    // Busca o IZZY pelo ID fornecido
+    const izzy = await prisma.izzy.findUnique({
+      where: {
+        id: String(id),
+      },
+      include: {
+        users: {
+          include: {
+            user: {
+              select: {
+                nome: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // Verifica se o IZZY foi encontrado
+    if (!izzy) {
+      return res.status(404).send('IZZY não encontrado')
+    }
+
+    const user = izzy.users.find((user: any) => {
+      return user.user_id === userId
+    })
+
+    if (!user) {
+      return res.status(404).send('Você não faz parte desse IZZY')
+    }
+
+    if (!user.responsavel) {
+      izzy.codigo_convite = izzy.senha = ''
+    }
+
+    // Retorna os dados do IZZY, incluindo os membros
+    for (const user of izzy.users) {
+      user.user_id = ''
+    }
+
+    res.status(200).send(izzy)
+  } catch (error) {
+    res.status(400).send('Desculpe, não foi possível consultar o IZZY. Tente novamente mais tarde')
+  }
+})
+
 export default server
