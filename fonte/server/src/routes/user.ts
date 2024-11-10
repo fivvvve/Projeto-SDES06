@@ -343,7 +343,8 @@ server.post("/user/data", async (req: Request, res: Response) => {
     try {
         const user = await prisma.user.findFirstOrThrow({
             where: {
-                id: String(id)
+                id: String(id),
+                excluido: false
             },
             select: {
                 nome: true,

@@ -6,11 +6,7 @@
     "start": "nodemon ./build/src/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "postinstall": "prisma generate",
-    "seed": "tsx prisma/seed.ts"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "postinstall": "prisma generate"
   },
   "author": "",
   "license": "ISC",
