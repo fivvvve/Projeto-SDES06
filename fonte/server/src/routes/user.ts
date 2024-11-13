@@ -46,13 +46,13 @@ server.post("/user/create", async (req: Request, res: Response) => {
 
     try {
 
-        const emailInUse = await prisma.user.count({
+        const emailInUse = await prisma.user.findFirst({
             where: {
                 email: email
             }
         });
 
-        if(emailInUse > 0) {
+        if(emailInUse && !emailInUse.excluido) {
             res.status(409).send('Email já cadastrado');
             return;
         }
