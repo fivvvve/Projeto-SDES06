@@ -38,7 +38,87 @@ app.use(atividade)
 
 // Agendando uma tarefa para ser executada diariamente à meia-noite
 cron.schedule('0 0 * * *', async () => {
-  console.log('Executando tarefa agendada todos os dias à meia-noite');
+
+  try {
+
+    console.log('Executando tarefa agendada todos os dias à meia-noite');
+    const diaAnterior = new Date();
+    diaAnterior.setUTCDate(diaAnterior.getUTCDate()-1);
+    diaAnterior.setUTCHours(0, 0, 0, 0);
+
+    const dias_semana_int = [
+      "Domingo",
+      "Segunda",
+      "Terça",
+      "Quarta",
+      "Quinta",
+      "Sexta",
+      "Sábado",
+    ];
+
+    const dataAtual = new Date();
+    dataAtual.setUTCHours(0, 0, 0, 0);
+    
+    const dataLimite = new Date(dataAtual);
+    dataLimite.setUTCDate(dataLimite.getUTCDate()+6);
+    const diaLimite = dias_semana_int[dataLimite.getUTCDay()];
+
+    await prisma.atividade_user.updateMany({
+        where: {
+            data_limite: diaAnterior,
+            status: "Pendente"
+        },
+        data: {
+            status: "Atrasada"
+        }
+    });
+
+    const atividades = await prisma.atividade.findMany({
+      where: {
+        tipo: "Iterativa",
+        OR: [
+          {
+            data_final: null
+          },
+          {
+            data_final: {
+              gte: dataLimite
+            }
+          }
+        ]
+      },
+      include: {
+        users: true,
+        dias_semana: true,
+        criador: true,
+        izzy: true
+      }
+    });
+
+
+    const atividadesInsert: { user_id: string; atividade_id: string; data_limite: Date }[] = [];
+    atividades.forEach( async atividade => {
+      if(atividade.dias_semana.some(dia => dia.dia === diaLimite)) {
+        atividade.users.forEach(user => {
+          atividadesInsert.push({
+            user_id: user.user_id,
+            atividade_id: atividade.id,
+            data_limite: dataLimite
+          })
+        })
+      }
+    });
+
+    await prisma.atividade_user.createMany({
+      data: atividadesInsert
+    })
+
+  } catch (error) {
+    console.log(error);
+  }
+
+}, {
+  timezone: "America/Sao_Paulo"
 });
 
 app.listen(PORT, () => {
