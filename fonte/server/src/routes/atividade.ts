@@ -400,4 +400,391 @@ server.patch("/atividade", async (req: Request, res: Response) => {
     }
 });
 
+interface AtividadesFormatadas {
+    titulo: string;
+    tipo: string;
+    izzy: string;
+    criador: string;
+    data_inicial: Date;
+    data_limite: Date;
+    descricao: string | null;
+    status: "Pendente" | string;
+    id: number | null;
+    editable: boolean;
+  }
+  
+  // Pesquisar Atividades de um usuário
+  server.get("/atividades/user", async (req: Request, res: Response) => {
+      //titulo = titulo da atividade a ser pesquisada - opcional
+      //tipo = tipo da atividade a ser pesquisa - Única ou Iterativa - opcional
+      //data = data a partir da qual as atividades serao pesquisadas - opcional - caso nao seja fornecida a data atual sera utilizada
+      //exibirAnteriores = indica se somente as atividades anteriores a data devem ser buscadas - opcional
+      //exibirPendentes = indica se somente as atividades pendentes devem ser buscadas - opcional
+      //izzyId = indica o id do izzy na qual as atividades estao sendo buscadas - opcional - caso nao seja fornecido serao buscados todos os izzys
+      //userId = indica o id do usuario que esta buscando suas atividades
+      const { titulo, tipo, data, exibirAnteriores, exibirPendentes, izzyId, userId } = req.query;
+  
+      if(!userId) {
+          return res.status(404).send("Erro ao buscar atividades");
+      }
+  
+      try {
+          let dataPesquisa : Date;
+          if(data) {
+              dataPesquisa = new Date(String(data));
+          } else {
+              dataPesquisa = new Date();
+              if(dataPesquisa.getUTCHours() < 3) dataPesquisa.setUTCDate(dataPesquisa.getUTCDate()-1);
+          }
+          dataPesquisa.setUTCHours(0, 0, 0, 0);
+  
+          // Buscar as atividades de acordo com os filtros aplicados
+          const atividades = await prisma.atividade.findMany({
+              where: {
+                  ... (titulo && {
+                      titulo: {contains: String(titulo)}
+                  }),
+                  ... (tipo && {
+                      tipo: String(tipo)
+                  }),
+                  ... (izzyId && {
+                      izzy_id: String(izzyId)
+                  }),
+                  //inclui somente atividades que o user faz parte
+                  users: {
+                      some: {
+                          user_id: String(userId)
+                      }
+                  }
+              },
+              include: {
+                  users: {
+                      where: {
+                          //seleciona somente atividades do user
+                          user_id: String(userId),
+                          //verifica como buscar as atividades
+                          ... (exibirAnteriores ? {
+                              data_limite: {
+                                  lte: dataPesquisa
+                              }
+                          } : {
+                              data_limite: {
+                                  gte: dataPesquisa
+                              }
+                          }),
+                          ... (exibirPendentes && {
+                              status: "Pendente"
+                          })
+                      },
+                      select: {
+                          id: true,
+                          data_limite: true,
+                          status: true
+                      }
+                  },
+                  izzy: {
+                      select: {
+                          nome: true
+                      }
+                  },
+                  dias_semana: {
+                      select: {
+                          dia: true
+                      }
+                  },
+                  criador: {
+                      select: {
+                          nome: true
+                      }
+                  }
+              }
+          });
+  
+          const atrasadas = await prisma.atividade_user.findFirst({
+              where: {
+                  user_id: String(userId),
+                  status: "Atrasada"
+              }
+          });
+  
+          const atividadesFormatadas : AtividadesFormatadas[] = [];
+  
+          atividades.forEach(atividade => {
+              atividade.users.forEach(dia => {
+                  atividadesFormatadas.push({
+                      titulo: atividade.titulo,
+                      tipo: atividade.tipo,
+                      izzy: atividade.izzy.nome,
+                      criador: atividade.criador.nome,
+                      data_inicial: atividade.data_inicio,
+                      descricao: atividade.descricao,
+                      status: dia.status,
+                      id: dia.id,
+                      data_limite: dia.data_limite,
+                      editable: true
+                  })
+              });
+          });
+  
+          const dataAtual = new Date();
+          if(dataAtual.getUTCHours() < 3) dataAtual.setUTCDate(dataAtual.getUTCDate()-1);
+          dataAtual.setUTCHours(0, 0, 0, 0);
+  
+          if(exibirAnteriores) {
+              dataAtual.setUTCDate(dataAtual.getUTCDate()+6);
+  
+              if(data && dataAtual.getTime() < dataPesquisa.getTime()) {
+                  const diffMilissegundos = dataPesquisa.getTime() - dataAtual.getTime();
+                  const diffDias = diffMilissegundos/(86400000);
+                  const dataIni = new Date(dataPesquisa);
+                  const dataFim = new Date(dataPesquisa);
+                  dataIni.setUTCHours(0, 0, 0, 0);
+                  dataFim.setUTCHours(0, 0, 0, 0);
+                  
+                  if(diffDias < 7) {
+                      dataFim.setUTCDate(dataFim.getUTCDate()-diffDias-1);
+                  } else {
+                      dataFim.setUTCDate(dataFim.getUTCDate()-6);
+                  }
+  
+                  //para cada atividade
+                  atividades.forEach(atividade => {
+                      const dataAux = new Date(dataIni);
+                      const atDataInicio = atividade.data_inicio ? new Date(atividade.data_inicio) : null
+                      const atDataFinal = atividade.data_final ? new Date(atividade.data_final) : null
+                      if(atDataFinal) atDataFinal.setUTCHours(0, 0, 0, 0);
+                      if(atDataInicio) atDataInicio.setUTCHours(0, 0, 0, 0);
+                      dataAux.setUTCHours(0, 0, 0, 0);
+                      
+                      //enquanto ainda houver dias a serem considerados
+                      while(dataAux.getTime() >= dataFim.getTime() && atDataInicio && dataAux.getTime() >= atDataInicio.getTime()) {
+                          if(atDataFinal && dataAux.getTime() <= atDataFinal.getTime()) {
+                              //se o dia da semana atual pertence aos dias que a atividade deve ser realizada, insere o dia nas atividadesFormatadas
+                              if(atividade.dias_semana.some(dia => dia.dia === dias_semana_int[dataAux.getUTCDay()])) {
+                                  atividadesFormatadas.push({
+                                      titulo: atividade.titulo,
+                                      tipo: atividade.tipo,
+                                      izzy: atividade.izzy.nome,
+                                      criador: atividade.criador.nome,
+                                      data_inicial: atividade.data_inicio,
+                                      descricao: atividade.descricao,
+                                      status: 'Pendente',
+                                      id: null,
+                                      data_limite: new Date(dataAux),
+                                      editable: false
+                                  })
+                              }
+                          }
+                          //passa para proximo dia
+                          dataAux.setUTCDate(dataAux.getUTCDate()-1);
+                      }
+                  });
+                  
+              }
+  
+              atividadesFormatadas.sort((a, b) => b.data_limite.getTime() - a.data_limite.getTime());
+          } else {
+  
+              //caso a data informada seja maior que a data limite que atividade iterativas são inseridas
+              if(data && dataAtual.getTime() < dataPesquisa.getTime()) {
+                  
+                  const diffMilissegundos = dataPesquisa.getTime() - dataAtual.getTime();
+                  const diffDias = diffMilissegundos/(86400000);
+                  
+                  const dataIni = new Date(dataPesquisa);
+                  const dataFim = new Date(dataPesquisa);
+                  dataIni.setUTCHours(0, 0, 0, 0);
+                  dataFim.setUTCHours(0, 0, 0, 0);
+                  dataFim.setUTCDate(dataFim.getUTCDate()+6);
+                  
+                  if(diffDias < 7) {
+                      //olhar a partir da data de pesquisa + 7 - diffDias até data de pesquisa + 6 dias (incluido)
+                      dataIni.setUTCDate(dataIni.getUTCDate()+7-diffDias);
+                  }
+                  
+                  //para cada atividade
+                  atividades.forEach(atividade => {
+                      const dataAux = new Date(dataIni);
+                      const atDataFinal = atividade.data_final ? new Date(atividade.data_final) : null
+                      if(atDataFinal) atDataFinal.setUTCHours(0, 0, 0, 0);
+                      dataAux.setUTCHours(0, 0, 0, 0);
+                      
+                      //enquanto ainda houver dias a serem considerados
+                      while(dataAux.getTime() <= dataFim.getTime() && atDataFinal && dataAux.getTime() <= atDataFinal.getTime()) {
+                          //se o dia da semana atual pertence aos dias que a atividade deve ser realizada, insere o dia nas atividadesFormatadas
+                          if(atividade.dias_semana.some(dia => dia.dia === dias_semana_int[dataAux.getUTCDay()])) {
+                              atividadesFormatadas.push({
+                                  titulo: atividade.titulo,
+                                  tipo: atividade.tipo,
+                                  izzy: atividade.izzy.nome,
+                                  criador: atividade.criador.nome,
+                                  data_inicial: atividade.data_inicio,
+                                  descricao: atividade.descricao,
+                                  status: 'Pendente',
+                                  id: null,
+                                  data_limite: new Date(dataAux),
+                                  editable: false
+                              })
+                          }
+                          //passa para proximo dia
+                          dataAux.setUTCDate(dataAux.getUTCDate()+1);
+                      }
+                  });
+              }
+  
+              atividadesFormatadas.sort((a, b) => a.data_limite.getTime() - b.data_limite.getTime());
+          }
+  
+          res.status(200).send({
+              pendentes: Boolean(atrasadas),
+              atividades: atividadesFormatadas
+          });
+  
+      } catch (error) {
+          res.status(500).send("Erro ao pesquisar atividades. Tente novamente mais tarde.");
+      }
+  });
+  
+  //Pesquisar atividades de um izzy
+  server.get("/atividades", async (req: Request, res: Response) => {
+  
+    const { izzyId, titulo, tipo } = req.query;
+  
+    try {
+  
+        const atividades = await prisma.atividade.findMany({
+            where: {
+                izzy_id: String(izzyId),
+                ... (titulo && {
+                    titulo: {
+                        contains: String(titulo)
+                    }
+                }),
+                ... (tipo && {
+                    tipo: String(tipo)
+                })
+            },
+            orderBy: {
+              data_inicio: 'asc'
+            },
+            select: {
+                id: true,
+                titulo: true,
+                descricao: true,
+                tipo: true,
+                data_inicio: true,
+                data_final: true,
+                data_limite: true,
+                criador: {
+                    select: {
+                        nome: true
+                    }
+                },
+                users: {
+                    select: {
+                        user: {
+                            select: {
+                                nome: true
+                            }
+                        }
+                    },
+                    distinct: 'user_id'
+                },
+                dias_semana: true,
+            }
+        });
+  
+        res.status(200).send(atividades);
+    
+    } catch (error) {
+        res.status(500).send("Erro ao pesquisar atividades. Tente novamente mais tarde.");
+    }
+  
+  });
+  
+  //deletar atividade de um izzy
+  server.delete("/atividade", async (req: Request, res: Response) => {
+  
+    const { id } = req.query;
+  
+    try {
+        const atividade = await prisma.atividade.findUniqueOrThrow({
+          where: {
+              id: String(id),
+          }
+        })
+  
+        const dataAtual = new Date();
+        if(dataAtual.getUTCHours() < 3) dataAtual.setUTCDate(dataAtual.getUTCDate()-1);
+        dataAtual.setUTCHours(0, 0, 0, 0);
+  
+        if (atividade.tipo === 'Única' && atividade.data_limite && atividade.data_limite < dataAtual) {
+          return res.status(400).send('Não é possível excluir uma atividade com data limite menor que a data atual')
+        } else if (atividade.data_final && atividade.data_final < dataAtual) {
+          return res.status(400).send('Não é possível excluir uma atividade com data final menor que a data atual')
+        }
+  
+        await prisma.atividade.delete({
+            where: {
+                id: String(id)
+            }
+        });
+  
+        res.status(200).send("Atividade excluída com sucesso");
+  
+    } catch (error) {
+        res.status(500).send("Erro ao deletar atividade. Tente novamente mais tarde.");
+    }
+  
+  });
+  
+  
+  // Atualizar status de uma atividade de um usuário
+  server.post("/atividade/status", async (req: Request, res: Response) => {
+  
+    const { id } = req.body;
+    let { status } = req.body as { status: "Pendente" | "Concluída" | "Concluída com Atraso" | "Atrasada" };
+  
+    try {
+        
+        const atividade = await prisma.atividade_user.findUnique({
+            where: {
+                id: id
+            }
+        });
+  
+        if(!atividade) {
+            return res.status(404).send("Atividade inválida");
+        }
+  
+        if(status === "Concluída") {
+            if(atividade.status === "Atrasada") {
+                status = "Concluída com Atraso";
+            }
+        } else {
+            const dataAtual = new Date();
+            if(dataAtual.getUTCHours() < 3) dataAtual.setUTCDate(dataAtual.getUTCDate()-1);
+            dataAtual.setUTCHours(0, 0, 0, 0);
+            if(atividade.data_limite.getTime() < dataAtual.getTime()) {
+                status = "Atrasada";
+            }
+        }
+  
+        await prisma.atividade_user.update({
+            where: {
+                id: atividade.id
+            },
+            data: {
+                status: status
+            }
+        });
+  
+        res.status(200).send("Status da atividade atualizado com sucesso");
+  
+    } catch (error) {
+        res.status(500).send("Erro ao atualizar o status da atividade. Tente novamente mais tarde.");
+    }
+  
+  });
+
 export default server;
