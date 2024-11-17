@@ -76,6 +76,9 @@ cron.schedule('0 0 * * *', async () => {
     const atividades = await prisma.atividade.findMany({
       where: {
         tipo: "Iterativa",
+        data_inicio: {
+          lt: dataAtual
+        },
         OR: [
           {
             data_final: null
@@ -94,7 +97,6 @@ cron.schedule('0 0 * * *', async () => {
         izzy: true
       }
     });
-
 
     const atividadesInsert: { user_id: string; atividade_id: string; data_limite: Date }[] = [];
     atividades.forEach( async atividade => {
