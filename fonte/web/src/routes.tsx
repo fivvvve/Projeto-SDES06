@@ -6,10 +6,12 @@ import { AuthLayout } from './pages/auth/layout'
 import { SignIn } from './pages/auth/sign-in'
 import { SignUp } from './pages/auth/sign-up'
 import { HomeLayout } from './pages/home/layout'
+import { Izzy } from './pages/izzys/[slug]/activities'
 import { IzzyDetails } from './pages/izzys/[slug]/details'
 import { IzzyLayout } from './pages/izzys/[slug]/layout'
-import { Izzy } from './pages/izzys/[slug]/page'
+import { IzzyMinistered } from './pages/izzys/[slug]/ministered'
 import { IzzyCreate } from './pages/izzys/create'
+import { NewActivity } from './pages/izzys/new-activity'
 import { Izzys } from './pages/izzys/page'
 import { ChangePassword } from './pages/settings/change-password'
 import { ExcludeAccount } from './pages/settings/exclude-account'
@@ -52,8 +54,16 @@ export const router = createBrowserRouter([
         element: <IzzyLayout />,
         children: [
           {
-            path: '/izzys/:id',
+            path: '/izzys/:id/new-activity',
+            element: <NewActivity />,
+          },
+          {
+            path: '/izzys/:id/activities',
             element: <Izzy />,
+          },
+          {
+            path: '/izzys/:id/ministered',
+            element: <IzzyMinistered />,
           },
           {
             path: '/izzys/:id/details',

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { createIzzy } from '../../api/create-izzy'
 import { Button } from '../../components/button'
 import { Input } from '../../components/input'
+import { Textarea } from '../../components/textarea'
 import { queryClient } from '../../lib/queryClient'
 import { userStore } from '../../store/user'
 
@@ -29,7 +30,6 @@ export function IzzyCreate() {
 
   const {
     control,
-    register,
     handleSubmit,
     formState: { errors },
   } = useForm<CreateIzzySchema>({
@@ -52,7 +52,7 @@ export function IzzyCreate() {
     if (!user) return
 
     const { name, description } = data
-
+    console.log(description)
     createIzzyFn({
       name,
       description,
@@ -91,10 +91,12 @@ export function IzzyCreate() {
             <Input {...field} placeholder="Nome do Izzy" />
           )}
         />
-        <textarea
-          className="w-full rounded-lg border border-gray-600 bg-transparent px-4 py-3 outline-none placeholder:text-gray-400 focus-within:border-cyan-300 focus-within:ring-2 focus-within:ring-cyan-600/30 dark:border-gray-50 dark:text-gray-100 dark:focus-within:ring-cyan-300/20"
-          placeholder="Descrição"
-          {...register('description')}
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <Textarea {...field} placeholder="Descrição" />
+          )}
         />
         {errors.name && (
           <p className="-my-2 text-red-500">{errors.name.message}</p>
