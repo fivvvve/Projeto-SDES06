@@ -180,6 +180,58 @@ server.post('/izzyinfo', async (req: Request, res: Response) => {
   } catch (error) {
     res.status(400).send('Desculpe, não foi possível consultar o IZZY. Tente novamente mais tarde')
   }
+});
+
+// Consultar membros de um IZZY
+server.get('/izzy/membros', async (req: Request, res: Response) => {
+  // id = id do izzy, nome = nome do usuário - opcional
+  const { id, nome } = req.query // ID do IZZY
+
+  try {
+    // Verifica se o IZZY existe
+    const izzy = await prisma.izzy.findUnique({
+      where: {
+        id: String(id),
+      },
+      include: {
+        users: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    })
+
+    // Se o IZZY não existir
+    if (!izzy) {
+      return res.status(404).send('IZZY não encontrado')
+    }
+
+    // Filtra os membros pelo nome, se o nome for fornecido
+    let membros = izzy.users.map((membro: any) => {
+      return {
+        responsavel: membro.responsavel,
+        saiu: membro.saiu,
+        nome: membro.user.nome,
+        email: membro.user.email,
+      }
+    })
+
+    if (nome) {
+      membros = membros.filter((membro: any) =>
+        membro.nome.toLowerCase().includes(String(nome).toLowerCase()),
+      )
+    }
+
+    // Retorna a lista de membros
+    res.status(200).send(membros)
+  } catch (error) {
+    res
+      .status(400)
+      .send(
+        'Desculpe, não foi possível consultar os membros. Tente novamente mais tarde',
+      )
+  }
 })
 
 export default server
