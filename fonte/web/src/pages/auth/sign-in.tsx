@@ -12,10 +12,9 @@ import { signIn } from '../../api/sign-in'
 import { Button } from '../../components/button'
 import { Input } from '../../components/input'
 import { User, userStore } from '../../store/user'
-import { useEffect } from 'react'
 
 const signInSchema = z.object({
-  email: z.string().email("Formato de email inválido"),
+  email: z.string().email(),
   password: z.string().min(8),
 })
 
@@ -27,15 +26,9 @@ export function SignIn() {
 
   const emailVerified = searchParams.get('email-verified') === 'true'
 
-  const { control, handleSubmit, formState: {errors} } = useForm<SignInSchema>({
+  const { control, handleSubmit } = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
   })
-
-  useEffect(() => {
-    if (errors.email) {
-      toast.error(errors.email.message)
-    }
-  }, [errors])
 
   const { setCookie } = userStore((state) => {
     return {
@@ -122,7 +115,7 @@ export function SignIn() {
             name="password"
             control={control}
             render={({ field }) => (
-              <Input {...field} type="password" placeholder="Senha" minLength={8} />
+              <Input {...field} type="password" placeholder="Senha" />
             )}
           />
           <Button>Entrar</Button>

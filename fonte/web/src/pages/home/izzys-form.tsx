@@ -122,7 +122,7 @@ export function IzzysForm() {
           result.map((item) => (
             <Link
               key={item.id}
-              to={`/izzys/${item.id}`}
+              to={`/izzys/${item.id}/activities`}
               className="flex items-center justify-between py-4 text-gray-800 dark:text-gray-100"
             >
               {item.nome}
