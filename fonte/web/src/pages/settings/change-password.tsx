@@ -94,7 +94,6 @@ export function ChangePassword() {
             required
             type="password"
             placeholder="Senha atual"
-            minLength={8}
           />
         )}
       />
@@ -102,7 +101,7 @@ export function ChangePassword() {
         name="newPassword"
         control={control}
         render={({ field }) => (
-          <Input {...field} required type="password" placeholder="Nova senha" minLength={8} />
+          <Input {...field} required type="password" placeholder="Nova senha" />
         )}
       />
       <Controller
@@ -114,7 +113,6 @@ export function ChangePassword() {
             required
             type="password"
             placeholder="Confirmar nova senha"
-            minLength={8}
           />
         )}
       />

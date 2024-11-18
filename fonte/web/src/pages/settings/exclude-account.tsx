@@ -19,10 +19,9 @@ const excludeAccountSchema = z.object({
 type ExcludeAccountSchema = z.infer<typeof excludeAccountSchema>
 
 export function ExcludeAccount() {
-  const { user, removeCookie } = userStore((store) => {
+  const { user } = userStore((store) => {
     return {
       user: store.user,
-      removeCookie: store.removeCookie
     }
   })
 
@@ -37,7 +36,6 @@ export function ExcludeAccount() {
     mutationFn: deleteUser,
     onSuccess: (data) => {
       toast.success(data)
-      removeCookie()
       navigate('/sign-in')
     },
     onError: (error: AxiosError<string>) => {
