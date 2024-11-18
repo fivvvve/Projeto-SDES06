@@ -3,7 +3,9 @@ import { ButtonHTMLAttributes, forwardRef } from 'react'
 import { tv, VariantProps } from 'tailwind-variants'
 
 const button = tv({
-  base: ['rounded-lg px-5 py-3 font-semibold text-white outline-none'],
+  base: [
+    'rounded-lg px-5 py-2.5 font-semibold text-white outline-none disabled:cursor-not-allowed disabled:opacity-50',
+  ],
   variants: {
     variant: {
       primary:
