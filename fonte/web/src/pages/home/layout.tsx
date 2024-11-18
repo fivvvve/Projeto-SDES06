@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 
 import { userStore } from '../../store/user'
 import { Sidebar } from './sidebar'
 
 export function HomeLayout() {
   const navigate = useNavigate()
-  const { pathname } = useLocation();
 
   const { user, fetchUser, isAuthenticated } = userStore((store) => {
     return {
@@ -20,8 +19,6 @@ export function HomeLayout() {
     if (isAuthenticated) {
       if (!user) {
         navigate('/sign-in')
-      } else {
-        if(pathname === '/') navigate('/activities')
       }
     }
   }, [isAuthenticated])

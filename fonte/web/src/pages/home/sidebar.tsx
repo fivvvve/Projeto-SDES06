@@ -12,9 +12,11 @@ import { FaUserCircle as User } from 'react-icons/fa'
 import { GoGear as Gear } from 'react-icons/go'
 import { IoLogOutOutline as Logout } from 'react-icons/io5'
 import { RiCalendarScheduleLine as Calendar } from 'react-icons/ri'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { userStore } from '../../store/user'
+import { ActivitiesForm } from './activities-form'
+import { IzzyForm } from './izzy-form'
 import { IzzysForm } from './izzys-form'
 
 export interface UserProps {
@@ -32,9 +34,12 @@ export function Sidebar() {
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { id } = useParams()
 
-  const isSettings = pathname.includes('/settings')
-  const isIzzys = pathname.includes('/izzys')
+  const isActivities = pathname.startsWith('/activities')
+  const isSettings = pathname.startsWith('/settings')
+  const isIzzys = pathname.endsWith('/izzys') || pathname === '/izzys/create'
+  const isIzzy = pathname.startsWith(`/izzys/${id}`)
 
   function handleNavigateToSettings() {
     navigate('/settings')
@@ -115,7 +120,9 @@ export function Sidebar() {
           Meus izzys
         </NavItem>
       </nav>
+      {isActivities && <ActivitiesForm />}
       {(isIzzys || isSettings) && <IzzysForm />}
+      {isIzzy && <IzzyForm />}
     </aside>
   )
 }
@@ -135,7 +142,7 @@ function NavItem({ path, children }: NavItemProps) {
           'flex items-center gap-2.5 rounded-full px-6 py-2 text-gray-800 dark:text-gray-100',
           {
             'border border-cyan-300 bg-gradient-to-r from-cyan-500 to-cyan-300 !text-gray-100':
-              pathname.includes(path),
+              pathname.startsWith(path),
           },
         )}
       >

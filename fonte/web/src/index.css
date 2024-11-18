@@ -21,3 +21,9 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   @apply text-fill-gray-700 dark:text-fill-gray-100;
 }
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  -webkit-appearance: none;
+}

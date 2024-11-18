@@ -48,9 +48,14 @@ export function IzzyDetails() {
           {result?.users.map((user) => (
             <div
               key={user.user_id}
-              className="px-5 py-4 font-dm-sans text-lg text-gray-600 dark:text-gray-100"
+              className="flex justify-between px-5 py-4 font-dm-sans text-lg text-gray-600 dark:text-gray-100"
             >
               {user.user.nome}
+              {user.responsavel && (
+                <span className="rounded-md border border-green-500 p-1 font-dm-sans text-sm text-green-500">
+                  Administrador
+                </span>
+              )}
             </div>
           ))}
         </main>
