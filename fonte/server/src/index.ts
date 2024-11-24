@@ -3,9 +3,10 @@ import cors from 'cors'
 import user from './routes/user'
 import izzy from './routes/izzy'
 import atividade from './routes/atividade'
+import relatorios from './routes/relatorios'
 import { prisma } from './lib/prisma'
 import { env } from 'node:process'
-import cron from "node-cron"
+import cron from "node-cron";
 
 const PORT = env.PORT || 5000
 const app = express()
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(user)
 app.use(izzy)
 app.use(atividade)
+app.use(relatorios)
 
 // Agendando uma tarefa para ser executada diariamente à meia-noite
 cron.schedule('0 0 * * *', async () => {
@@ -98,6 +100,7 @@ cron.schedule('0 0 * * *', async () => {
       }
     });
 
+
     const atividadesInsert: { user_id: string; atividade_id: string; data_limite: Date }[] = [];
     atividades.forEach( async atividade => {
       if(atividade.dias_semana.some(dia => dia.dia === diaLimite)) {
@@ -120,7 +123,7 @@ cron.schedule('0 0 * * *', async () => {
   }
 
 }, {
-  timezone: "America/Sao_Paulo"
+  timezone: "America/Sao_Paulo"  // Ajuste para o fuso horário desejado
 });
 
 app.listen(PORT, () => {
