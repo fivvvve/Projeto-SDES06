@@ -217,7 +217,10 @@ export function TaskItem({ task, ...rest }: TaskItemProps) {
             <div className="font-dm-sans font-semibold">
               Data Inicial:{' '}
               <span className="font-light">
-                {format(add(parseISO(task.data_inicial), { days: 1 }), 'dd/MM/yyyy')}
+                {format(
+                  add(parseISO(task.data_inicial), { days: 1 }),
+                  'dd/MM/yyyy',
+                )}
               </span>
             </div>
           </div>

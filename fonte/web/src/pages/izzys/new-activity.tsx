@@ -324,7 +324,7 @@ export function NewActivity() {
                         }
                       }}
                       key={day.value}
-                      className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-800 text-lg text-gray-800 data-[state=checked]:bg-gray-100 data-[state=checked]:bg-gray-800 data-[state=checked]:text-gray-100 data-[state=checked]:text-gray-800 dark:border-gray-100 dark:text-gray-100 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:text-gray-800"
+                      className="data-[state=checked]:bg-text-100 flex h-12 w-12 items-center justify-center rounded-full border border-gray-800 text-lg text-gray-800 data-[state=checked]:bg-gray-800 data-[state=checked]:text-gray-100 dark:border-gray-100 dark:text-gray-100 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:text-gray-800"
                     >
                       {day.label}
                     </button>

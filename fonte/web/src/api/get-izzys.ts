@@ -1,8 +1,8 @@
 import { api } from '../lib/axios'
 
 interface GetIzzysBody {
-  name: string | null
-  onlyResponsable: string | undefined | null
+  name?: string | null
+  onlyResponsable?: string | undefined | null
   userId: string | null
 }
 

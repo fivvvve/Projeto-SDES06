@@ -18,6 +18,8 @@ import { userStore } from '../../store/user'
 import { ActivitiesForm } from './activities-form'
 import { IzzyForm } from './izzy-form'
 import { IzzysForm } from './izzys-form'
+import { ReportsForm } from './reports-form'
+import { SettingsForm } from './settings-form'
 
 export interface UserProps {
   id: string
@@ -38,7 +40,11 @@ export function Sidebar() {
 
   const isActivities = pathname.startsWith('/activities')
   const isSettings = pathname.startsWith('/settings')
-  const isIzzys = pathname.endsWith('/izzys') || pathname === '/izzys/create'
+  const isReports = pathname.startsWith('/settings/reports')
+  const isIzzys =
+    pathname.endsWith('/izzys') ||
+    pathname === '/izzys/create' ||
+    pathname === '/izzys/join'
   const isIzzy = pathname.startsWith(`/izzys/${id}`)
 
   function handleNavigateToSettings() {
@@ -121,7 +127,8 @@ export function Sidebar() {
         </NavItem>
       </nav>
       {isActivities && <ActivitiesForm />}
-      {(isIzzys || isSettings) && <IzzysForm />}
+      {isSettings ? isReports ? <ReportsForm /> : <SettingsForm /> : null}
+      {isIzzys && <IzzysForm />}
       {isIzzy && <IzzyForm />}
     </aside>
   )

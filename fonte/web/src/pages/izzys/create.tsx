@@ -52,7 +52,7 @@ export function IzzyCreate() {
     if (!user) return
 
     const { name, description } = data
-    console.log(description)
+
     createIzzyFn({
       name,
       description,

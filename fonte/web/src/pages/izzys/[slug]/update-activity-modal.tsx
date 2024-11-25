@@ -113,7 +113,7 @@ export function UpdateActivityModal({
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed top-0 min-h-screen w-full bg-gray-950 opacity-70 backdrop-blur" />
-        <Dialog.Content className="data-[state=open]:animate-contentShow fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-8 shadow-xl dark:bg-gray-800">
+        <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-8 shadow-xl data-[state=open]:animate-contentShow dark:bg-gray-800">
           <Dialog.Title className="text-center font-anton text-4xl text-gray-800 dark:text-gray-100">
             Atualizar atividade
           </Dialog.Title>

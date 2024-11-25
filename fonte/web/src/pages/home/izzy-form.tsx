@@ -45,7 +45,6 @@ export function IzzyForm() {
 
   function handleSearchIzzys(data: IzzyFormSchema) {
     const { name, type } = data
-    console.log(type)
 
     setSearchParams((state) => {
       if (name) {

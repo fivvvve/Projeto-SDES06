@@ -457,16 +457,22 @@ server.post('/izzy/sair', async (req: Request, res: Response) => {
     }
 
     if (!user.responsavel) {
-      await prisma.user_izzy.update({
+      await prisma.user_izzy.delete({
         where: {
           user_id_izzy_id: {
             user_id: String(userId),
             izzy_id: String(id),
           },
-        },
-        data: {
-          saiu: true,
-        },
+        }
+      })
+
+      await prisma.atividade_user.deleteMany({
+        where: {
+          user_id: String(userId),
+          atividade: {
+            izzy_id: String(id),
+          }
+        }
       })
 
       return res.status(200).send('Removido do IZZY com sucesso.')
@@ -484,17 +490,22 @@ server.post('/izzy/sair', async (req: Request, res: Response) => {
         }
 
         // atualiza o usuario que vai sair do IZZY
-        await prisma.user_izzy.update({
+        await prisma.user_izzy.delete({
           where: {
             user_id_izzy_id: {
               izzy_id: String(id),
               user_id: String(userId),
             },
-          },
-          data: {
-            saiu: true,
-            responsavel: false,
-          },
+          }
+        })
+
+        await prisma.atividade_user.deleteMany({
+          where: {
+            user_id: String(userId),
+            atividade: {
+              izzy_id: String(id),
+            }
+          }
         })
 
         if (!newResponsible) {
@@ -522,17 +533,22 @@ server.post('/izzy/sair', async (req: Request, res: Response) => {
           )
       } else {
         // caso haja outros responsaveis
-        await prisma.user_izzy.update({
+        await prisma.user_izzy.delete({
           where: {
             user_id_izzy_id: {
               user_id: String(userId),
               izzy_id: String(id),
             },
-          },
-          data: {
-            saiu: true,
-            responsavel: false,
-          },
+          }
+        })
+
+        await prisma.atividade_user.deleteMany({
+          where: {
+            user_id: String(userId),
+            atividade: {
+              izzy_id: String(id),
+            }
+          }
         })
 
         return res.status(200).send('Removido do IZZY com sucesso.')
@@ -605,19 +621,37 @@ server.post('/izzy/remover-membro', async (req: Request, res: Response) => {
         )
     }
 
-    // Remove o membro da lista de membros do IZZY
-    await prisma.user_izzy.update({
+    await prisma.user_izzy.delete({
       where: {
         user_id_izzy_id: {
           user_id: userToRemove.id,
-          izzy_id: izzyId,
-        },
-      },
-      data: {
-        saiu: true,
-        responsavel: false,
-      },
+          izzy_id: izzyId
+        }
+      }
     })
+
+    await prisma.atividade_user.deleteMany({
+      where: {
+        user_id: userToRemove.id,
+        atividade: {
+          izzy_id: izzyId
+        }
+      }
+    })
+
+    // Remove o membro da lista de membros do IZZY
+    // await prisma.user_izzy.update({
+    //   where: {
+    //     user_id_izzy_id: {
+    //       user_id: userToRemove.id,
+    //       izzy_id: izzyId,
+    //     },
+    //   },
+    //   data: {
+    //     saiu: true,
+    //     responsavel: false,
+    //   },
+    // })
 
     res.status(200).send('Membro removido com sucesso')
   } catch (error) {

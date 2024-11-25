@@ -11,8 +11,10 @@ import { IzzyDetails } from './pages/izzys/[slug]/details'
 import { IzzyLayout } from './pages/izzys/[slug]/layout'
 import { IzzyMinistered } from './pages/izzys/[slug]/ministered'
 import { IzzyCreate } from './pages/izzys/create'
+import { IzzyJoin } from './pages/izzys/join'
 import { NewActivity } from './pages/izzys/new-activity'
 import { Izzys } from './pages/izzys/page'
+import { ActivitiesReport } from './pages/reports/activities'
 import { ChangePassword } from './pages/settings/change-password'
 import { ExcludeAccount } from './pages/settings/exclude-account'
 import { SettingsLayout } from './pages/settings/layout'
@@ -48,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: '/izzys/create',
         element: <IzzyCreate />,
+      },
+      {
+        path: '/izzys/join',
+        element: <IzzyJoin />,
       },
       {
         path: '/izzys/:id',
@@ -89,8 +95,13 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: '/settings/reports/activities',
+        element: <ActivitiesReport />,
+      },
     ],
   },
+
   {
     path: '/email-verify',
     element: <EmailVerify />,
